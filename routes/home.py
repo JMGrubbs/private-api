@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
+from os import environ as env
 
-from env import API_KEY
+# from env import API_KEY
 
 homeRoutes = APIRouter()
 
@@ -11,7 +12,7 @@ class ResponseModel(BaseModel):
 
 
 async def get_api_key(api_key: str):
-    if api_key == API_KEY:
+    if api_key == env['API_KEY']:
         return api_key
     else:
         raise HTTPException(status_code=400, detail="Invalid API Key")

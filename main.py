@@ -14,4 +14,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.router.prefix = "/api"
+
 app.include_router(homeRoutes, prefix="/home", tags=["home"])
