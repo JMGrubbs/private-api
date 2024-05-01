@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 from routes.home import homeRoutes
+from routes.message_routes import messageRoutes
+from routes.thread_routes import threadRoutes
+from routes.agent_routes import agentRoutes
 
 app = FastAPI()
 
@@ -17,3 +20,6 @@ app.add_middleware(
 app.router.prefix = "/api"
 
 app.include_router(homeRoutes, prefix="/home", tags=["home"])
+app.include_router(messageRoutes, prefix="/message", tags=["message"])
+app.include_router(threadRoutes, prefix="/thread", tags=["thread"])
+app.include_router(agentRoutes, prefix="/agent", tags=["agent"])
