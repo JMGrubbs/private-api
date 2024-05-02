@@ -14,7 +14,6 @@ services:
       - redis
     volumes:
       - .:/app
-    volumes:
       - ./requirements.txt:/app/requirements.txt
 
   redis:
