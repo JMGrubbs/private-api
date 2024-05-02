@@ -29,4 +29,4 @@ async def get_messages(request: Request):
 @homeRoutes.get("/test", tags=["home"], response_model=ResponseModel)
 async def test_sight():
     # await get_api_key(request.headers["api-key"])
-    return {"response": {"temp": "API is up!"}}
+    return {"response": {"temp": "API is up!!"}}

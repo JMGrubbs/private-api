@@ -2,14 +2,20 @@ version: '3.3'
 
 services:
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: sh -c "uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     env_file:
       - .env
     ports:
       - 8000:8000
+    depends_on:
+      - redis
     volumes:
       - .:/app
+    volumes:
+      - ./requirements.txt:/app/requirements.txt
 
   redis:
     image: redis:latest
@@ -18,7 +24,6 @@ services:
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
-
 
 volumes:
   redis_data:
