@@ -1,9 +1,6 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-import os
-
-api_key = os.getenv("API_KEY")
-
+from dependencies import validate_api_key
 
 homeRoutes = APIRouter()
 
@@ -12,21 +9,14 @@ class ResponseModel(BaseModel):
     response: dict
 
 
-async def get_api_key(api_key: str):
-    if api_key == api_key:
-        return api_key
-    else:
-        raise HTTPException(status_code=400, detail="Invalid API Key")
+# response_model=ResponseModel,
 
 
-@homeRoutes.get("/", tags=["home"], response_model=ResponseModel)
-async def get_messages(request: Request):
-    await get_api_key(request.headers["api-key"])
-
-    return {"response": {"temp": "Message sent successfully"}}
+@homeRoutes.get("/home", tags=["home"], dependencies=[Depends(validate_api_key)])
+async def get_messages():
+    return {"response": {"temp": "Hello World"}}
 
 
-@homeRoutes.get("/test", tags=["home"], response_model=ResponseModel)
+@homeRoutes.get("/test", tags=["test"])
 async def test_sight():
-    # await get_api_key(request.headers["api-key"])
     return {"response": {"temp": "API is up!!"}}

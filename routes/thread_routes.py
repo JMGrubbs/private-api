@@ -1,36 +1,32 @@
-from fastapi import APIRouter, HTTPException, Request
-import os
+from fastapi import APIRouter, HTTPException, Depends, Query
+from dependencies import validate_api_key, get_session
+from typing import Optional
 from threads.tools import (
     create_thread,
-    get_threads,
 )
-
-API_KEY = os.getenv("API_KEY")
+from threads.controller import get_proxy_threads
 
 
 threadRoutes = APIRouter()
 
-# class ResponseModel(BaseModel):
-#     data: Union[dict, list]
+
+@threadRoutes.get(
+    "/", tags=["threads"], dependencies=[Depends(validate_api_key), Depends(get_session)]
+)
+async def fetch_threads(
+    proxy_agent_id: Optional[str] = Query(None, alias="agent-id"), db=Depends(get_session)
+):
+    threads = await get_proxy_threads(db, proxy_agent_id)
+    result = True
+    if not result:
+        raise HTTPException(status_code=404, detail="No threads found")
+    return {"response": threads}
 
 
-async def get_api_key(api_key: str):
-    if api_key == API_KEY:
-        return api_key
-    else:
-        raise HTTPException(status_code=400, detail="Invalid API Key")
-
-
-@threadRoutes.get("/get")
-async def get_messages(request: Request):
-    await get_api_key(request.headers["api-key"])
-    threads = await get_threads()
-    print("Threads: ", threads)
-    return {"data": threads}
-
-
-@threadRoutes.post("/create")
-async def send_message(request: Request):
-    await get_api_key(request.headers["api-key"])
+@threadRoutes.post("/create", tags=["threads"], dependencies=[Depends(validate_api_key)])
+async def send_message():
     new_thread = await create_thread()
+    result = True
+    if not result:
+        raise HTTPException(status_code=404, detail="Thread not created")
     return new_thread.model_dump()

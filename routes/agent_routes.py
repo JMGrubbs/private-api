@@ -1,93 +1,23 @@
-from fastapi import APIRouter, HTTPException, Request
-import os
-from agent.tools import (
-    get_agents_from_openai,
-    get_agents_from_cache,
-    get_agent_from_cache,
-    create_agent_obj,
-)
+from fastapi import APIRouter, HTTPException, Request, Depends, Query
+from typing import Optional
+from dependencies import validate_api_key
+from agent.controller import get_agents
 
-API_KEY = os.getenv("API_KEY")
-
-
-proxy_agent = None
 
 agentRoutes = APIRouter()
 
 
-async def get_api_key(api_key: str):
-    if api_key.get("api-key", None) == API_KEY:
-        return api_key
-    else:
-        raise HTTPException(status_code=400, detail="Invalid API Key")
+@agentRoutes.get("/", dependencies=[Depends(validate_api_key)])
+async def retrieve_agents(agent_id: Optional[str] = Query(None, alias="agent-id")):
+    try:
+        agents = await get_agents(agent_id)
+        return {"response": agents}
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Agent retrieval failed: {e}")
 
 
-@agentRoutes.get("/get")
-async def get_agents(request: Request):
-    await get_api_key(request.headers)
-    agents = await get_agents_from_cache()
-    if agents == {}:
-        agents = await get_agents_from_openai()
-    return agents
-
-
-@agentRoutes.get("/get/openai/agents")
-async def get_agents_openai(request: Request):
-    await get_api_key(request.headers)
-    agents = await get_agents_from_openai()
-    return agents
-
-
-@agentRoutes.get("/get/agent/{agent_id}")
-async def get_agent_object_from_cache(request: Request):
-    await get_api_key(request.headers)
-    assistent_id = request.path_params["agent_id"]
-    agent = await get_agent_from_cache(assistent_id)
-    return {"agent": agent}
-
-
-@agentRoutes.post("/proxy/agent/{agent_id}")
-async def set_proxy_agent(request: Request):
-    # await get_api_key(request.headers)
-
-    global proxy_agent
-
-    new_agent_id = request.path_params["agent_id"]
-    if not proxy_agent or new_agent_id != proxy_agent.id:
-        proxy_agent = await create_agent_obj(request.path_params["agent_id"])
-
-    return {"agent": proxy_agent.model_dump()}
-
-
-@agentRoutes.get("/proxy/agent")
-async def get_proxy_agent(request: Request):
-    await get_api_key(request.headers)
-
-    global proxy_agent
-    if proxy_agent is None:
-        return {"Status": False}
-
-    return proxy_agent
-
-
-@agentRoutes.post("/proxy/thread/{thread_id}")
-async def set_proxy_thread(request: Request):
-    await get_api_key(request.headers)
-
-    global proxy_agent
-    if proxy_agent is None:
-        return {"Status": False}
-
-    proxy_agent.current_thread_id = request.path_params["thread_id"]
-    await proxy_agent.fetch_messages()
-
-    return proxy_agent
-
-
-@agentRoutes.get("/proxy/messages")
+@agentRoutes.get("/proxy/messages", dependencies=[Depends(validate_api_key)])
 async def add_proxy_message(request: Request):
-    await get_api_key(request.headers)
-
     global proxy_agent
     if proxy_agent is None:
         return {"Status": False}
