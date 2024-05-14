@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
-from dependencies import validate_api_key, get_session
+from dependencies import validate_api_key, db_session
 from typing import Optional
 from threads.tools import (
     create_thread,
@@ -11,10 +11,10 @@ threadRoutes = APIRouter()
 
 
 @threadRoutes.get(
-    "/", tags=["threads"], dependencies=[Depends(validate_api_key), Depends(get_session)]
+    "/", tags=["threads"], dependencies=[Depends(validate_api_key), Depends(db_session)]
 )
 async def fetch_threads(
-    proxy_agent_id: Optional[str] = Query(None, alias="agent-id"), db=Depends(get_session)
+    proxy_agent_id: Optional[str] = Query(None, alias="agent-id"), db=Depends(db_session)
 ):
     threads = await get_proxy_threads(db, proxy_agent_id)
     result = True

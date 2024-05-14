@@ -1,16 +1,15 @@
 from openai_client import openai_client_connection
-from cache.tools import get_set_cache
 from sqlalchemy.sql import text
 
 
 async def create_thread():
     async with openai_client_connection() as client:
         new_thread = client.beta.threads.create()
-        await get_set_cache(
-            key=new_thread.id,
-            namespace="threads",
-            obj_type=new_thread.model_dump(),
-        )
+        # await get_set_cache(
+        #     key=new_thread.id,
+        #     namespace="threads",
+        #     obj_type=new_thread.model_dump(),
+        # )
         return new_thread
 
 
@@ -41,5 +40,5 @@ async def get_threads_db(db):
         result = await session.execute(stmt)
         threads = result.fetchall()
         threads = [{"id": id, "thread_id": thread_id} for id, thread_id in threads]
-        ret = await get_set_cache(namespace="proxy_threads", obj_type=threads)
-        print("ret", ret)
+        # await get_set_cache(namespace="proxy_threads", obj_type=threads)
+        return threads

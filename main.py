@@ -2,19 +2,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import asyncio
-from dependencies import worker
+from dependencies import worker, db_session
 
 from routes.home import homeRoutes
 from routes.message_routes import messageRoutes
 from routes.thread_routes import threadRoutes
 from routes.agent_routes import agentRoutes
-from agent.controller import get_agents
 
 
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
     worker_task = asyncio.create_task(worker())
-    await get_agents()
     yield
     worker_task.cancel()
     try:

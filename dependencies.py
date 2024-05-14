@@ -31,6 +31,6 @@ async def worker():
         is_worker_active = False
 
 
-async def get_session():
+async def db_session():
     async with async_session_factory() as session:
         yield session

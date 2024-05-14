@@ -1,24 +1,48 @@
-from fastapi import APIRouter, HTTPException, Request, Depends, Query
-from typing import Optional
-from dependencies import validate_api_key
-from agent.controller import get_agents
+from fastapi import APIRouter, HTTPException, Depends, Request
+
+# from typing import Optional
+from dependencies import validate_api_key, db_session
+from agent.controller import create_agents, select_agents, delete_agent, retrieve_agents
 
 
 agentRoutes = APIRouter()
 
 
-@agentRoutes.get("/", dependencies=[Depends(validate_api_key)])
-async def retrieve_agents(agent_id: Optional[str] = Query(None, alias="agent-id")):
+@agentRoutes.post("/refresh-db", dependencies=[Depends(validate_api_key)])
+async def agents_db_load(db=Depends(db_session)):
     try:
-        agents = await get_agents(agent_id)
+        await retrieve_agents(db)
+        return {"response": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Agent retrieval failed: {e}")
+
+
+@agentRoutes.get("/get", dependencies=[Depends(validate_api_key)])
+async def get_agents(db=Depends(db_session)):
+    try:
+        agents = await select_agents(db)
         return {"response": agents}
     except Exception as e:
-        raise HTTPException(status_code=404, detail=f"Agent retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get agents from db: {e}")
 
 
-@agentRoutes.get("/proxy/messages", dependencies=[Depends(validate_api_key)])
-async def add_proxy_message(request: Request):
-    global proxy_agent
-    if proxy_agent is None:
-        return {"Status": False}
-    return {"data": proxy_agent.messages}
+@agentRoutes.post("/create", dependencies=[Depends(validate_api_key)])
+async def create_new_agent(request: Request, db=Depends(db_session)):
+    try:
+        new_agent_package = await request.json()
+        new_agent = await create_agents(new_agent_package, db)
+        return {"response": new_agent}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Agent creation failed: {e}")
+
+
+@agentRoutes.delete("/delete", dependencies=[Depends(validate_api_key)])
+async def agent_delete(db=Depends(db_session)):
+    try:
+        agent = "asst_qdubqj8gWM0m9lgG1XG7lASK"
+        print(f"Deleting agent: {agent}")
+        result = await delete_agent(agent, db)
+        print(f"Agent Deleted: {result}")
+        return {"response": "delete agent"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete agent: {e}")
