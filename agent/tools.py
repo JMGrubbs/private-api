@@ -1,6 +1,4 @@
 from openai_client import openai_client_connection
-from cache.tools import get_set_cache_list
-
 from sqlalchemy.sql import text
 
 

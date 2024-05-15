@@ -1,26 +1,25 @@
 from fastapi import APIRouter, HTTPException, Request, Depends
-from dependencies import validate_api_key
+from dependencies import validate_api_key, db_session
+
+from messages.controller import get_messages, send_message
 
 
 messageRoutes = APIRouter()
 
 
-@messageRoutes.get("/get", tags=["messages"], dependencies=[Depends(validate_api_key)])
-async def get_messages(request: Request):
-    # json_messages = [
-    #     message.model_dump() for message in proxy_agent.messages
-    # ]
-    # print(json_messages)
+@messageRoutes.get("/{id}/get", dependencies=[Depends(validate_api_key), Depends(db_session)])
+async def messages_get(id: int, db=Depends(db_session)):
+    messages = await get_messages(id, db)
     result = True
     if not result:
         raise HTTPException(status_code=404, detail="No messages found")
+    return {"response": messages}
 
-    return {"data": ["messages"]}
 
-
-@messageRoutes.get("/sendmessage", tags=["messages"], dependencies=[Depends(validate_api_key)])
-async def send_message(request: Request):
-    result = True
-    if not result:
+@messageRoutes.post("/add", dependencies=[Depends(validate_api_key), Depends(db_session)])
+async def message_send(request: Request, db=Depends(db_session)):
+    request_body = await request.json()
+    message_replay = await send_message(request_body, db)
+    if not message_replay:
         raise HTTPException(status_code=404, detail="Message not sent")
-    return {"response": {"temp": "Message sent successfully"}}
+    return {"response": message_replay}

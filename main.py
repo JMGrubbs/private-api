@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import asyncio
-from dependencies import worker, db_session
+from dependencies import worker
 
 from routes.home import homeRoutes
 from routes.message_routes import messageRoutes
@@ -35,5 +35,5 @@ app.router.prefix = "/api"
 
 app.include_router(agentRoutes, prefix="/agents", tags=["agents"])
 app.include_router(homeRoutes, prefix="/home", tags=["home"])
-app.include_router(messageRoutes, prefix="/message", tags=["message"])
+app.include_router(messageRoutes, prefix="/messages", tags=["message"])
 app.include_router(threadRoutes, prefix="/threads", tags=["threads"])

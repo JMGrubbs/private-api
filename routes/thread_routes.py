@@ -1,32 +1,23 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends
 from dependencies import validate_api_key, db_session
-from typing import Optional
-from threads.tools import (
-    create_thread,
-)
-from threads.controller import get_proxy_threads
+from threads.controller import create_thread, select_threads
 
 
 threadRoutes = APIRouter()
 
 
-@threadRoutes.get(
-    "/", tags=["threads"], dependencies=[Depends(validate_api_key), Depends(db_session)]
-)
-async def fetch_threads(
-    proxy_agent_id: Optional[str] = Query(None, alias="agent-id"), db=Depends(db_session)
-):
-    threads = await get_proxy_threads(db, proxy_agent_id)
+@threadRoutes.get("/get", dependencies=[Depends(validate_api_key), Depends(db_session)])
+async def threads_select(db=Depends(db_session)):
+    threads = await select_threads(db)
     result = True
     if not result:
-        raise HTTPException(status_code=404, detail="No threads found")
+        raise HTTPException(status_code=404, detail="Error getting threads")
     return {"response": threads}
 
 
-@threadRoutes.post("/create", tags=["threads"], dependencies=[Depends(validate_api_key)])
-async def send_message():
-    new_thread = await create_thread()
-    result = True
-    if not result:
-        raise HTTPException(status_code=404, detail="Thread not created")
-    return new_thread.model_dump()
+@threadRoutes.post("/create", dependencies=[Depends(validate_api_key), Depends(db_session)])
+async def threads_create(db=Depends(db_session)):
+    new_thread = await create_thread(db)
+    if not new_thread:
+        raise HTTPException(status_code=500, detail="Thread not created")
+    return {"response": new_thread}
