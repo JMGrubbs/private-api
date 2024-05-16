@@ -7,9 +7,9 @@ from messages.controller import get_messages, send_message
 messageRoutes = APIRouter()
 
 
-@messageRoutes.get("/{id}/get", dependencies=[Depends(validate_api_key), Depends(db_session)])
-async def messages_get(id: int, db=Depends(db_session)):
-    messages = await get_messages(id, db)
+@messageRoutes.get("/{id}/get", dependencies=[Depends(validate_api_key)])
+async def messages_get(id: str):
+    messages = await get_messages(id)
     result = True
     if not result:
         raise HTTPException(status_code=404, detail="No messages found")
@@ -19,7 +19,7 @@ async def messages_get(id: int, db=Depends(db_session)):
 @messageRoutes.post("/add", dependencies=[Depends(validate_api_key), Depends(db_session)])
 async def message_send(request: Request, db=Depends(db_session)):
     request_body = await request.json()
-    message_replay = await send_message(request_body, db)
-    if not message_replay:
+    all_messages = await send_message(request_body, db)
+    if not all_messages:
         raise HTTPException(status_code=404, detail="Message not sent")
-    return {"response": message_replay}
+    return {"response": all_messages}

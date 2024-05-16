@@ -24,7 +24,7 @@ async def get_thread_from_openai(thread_id):
 async def get_threads_db(db):
     try:
         async with db as session:
-            stmt = text("SELECT id, thread_id, name FROM chatbot.threads;")
+            stmt = text("SELECT id, thread_id, name FROM chatbot.threads WHERE status = true;")
             result = await session.execute(stmt)
             threads = result.fetchall()
             threads = [
@@ -52,7 +52,19 @@ async def insert_thread_db(new_thread, db):
 
 async def get_openai_thread_id(id, db):
     async with db as session:
-        stmt = text("SELECT thread_id FROM chatbot.threads WHERE id=:id;")
+        stmt = text("SELECT thread_id FROM chatbot.threads WHERE id=:id AND status = true;")
         result = await session.execute(stmt, {"id": id})
         thread_id = result.fetchone()
         return thread_id[0] if thread_id else None
+
+
+async def delete_thread_db(thread_id, db):
+    try:
+        async with db as session:
+            stmt = text("UPDATE chatbot.threads SET status = False WHERE thread_id = :thread_id;")
+            await session.execute(stmt, {"thread_id": thread_id})
+            await session.commit()
+            return True
+    except Exception as e:
+        print("Error deleting thread:", e)
+        return False

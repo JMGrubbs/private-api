@@ -45,5 +45,4 @@ async def get_completion_openai(thread_id, text, sender, agent_id):
         run = await get_run_openai(thread_id, run.get("id"))
         print(run.get("status"))
         time.sleep(0.5)
-    messages = await get_messages_openai(thread_id)
-    return messages
+    return True

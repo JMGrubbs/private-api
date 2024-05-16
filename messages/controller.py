@@ -1,9 +1,8 @@
 from messages.tools import get_messages_openai, get_completion_openai
-from threads.tools import get_openai_thread_id
+from threads.controller import create_thread
 
 
-async def get_messages(id, db):
-    thread_id = await get_openai_thread_id(id, db)
+async def get_messages(thread_id):
     messages = await get_messages_openai(thread_id)
     return messages
 
@@ -13,12 +12,13 @@ async def send_message(request_body, db):
     sender = request_body.get("sender", None)
     thread_id = request_body.get("thread", None)
     agent_id = request_body.get("proxy", None)
-    if thread_id:
-        thread_id = await get_openai_thread_id(thread_id, db)
     if not text or not sender:
         return False
     if not thread_id:
-        # new_thread = await get_openai_thread_id(sender, db)
-        pass
-    new_message = await get_completion_openai(thread_id, text, sender, agent_id)
-    return new_message
+        new_thread = await create_thread(db)
+        thread_id = new_thread.get("id")
+    run_result = await get_completion_openai(thread_id, text, sender, agent_id)
+    if not run_result:
+        return False
+    all_messages = await get_messages(thread_id)
+    return all_messages
