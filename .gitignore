@@ -2,3 +2,4 @@
 *.toml
 .env
 .rdb
+__pycache__/
