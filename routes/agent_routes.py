@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends
 
 # from typing import Optional
 from dependencies import validate_api_key, db_session
+from agent.data_classes import NewAgent
 from agent.controller import create_agents, select_agents, delete_agent, retrieve_agents
 
 
@@ -27,10 +28,9 @@ async def get_agents(db=Depends(db_session)):
 
 
 @agentRoutes.post("/create", dependencies=[Depends(validate_api_key)])
-async def create_new_agent(request: Request, db=Depends(db_session)):
+async def create_new_agent(newAgent: NewAgent, db=Depends(db_session)):
     try:
-        new_agent_package = await request.json()
-        new_agent = await create_agents(new_agent_package, db)
+        new_agent = await create_agents(newAgent, db)
         return {"response": new_agent}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Agent creation failed: {e}")

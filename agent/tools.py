@@ -1,5 +1,6 @@
 from openai_client import openai_client_connection
 from sqlalchemy.sql import text
+from agent.data_classes import NewAgent
 
 
 async def get_agents_openai():
@@ -14,14 +15,14 @@ async def get_agents_openai():
         return False
 
 
-async def create_new_agent_openai(new_agent_package):
+async def create_new_agent_openai(newAgent: NewAgent):
     try:
         async with openai_client_connection() as client:
             new_agent = client.beta.assistants.create(
-                instructions=new_agent_package.get("instructions", "Please provide instructions"),
-                name=new_agent_package.get("name", "New Agent"),
-                tools=new_agent_package.get("tools", []),
-                model=new_agent_package.get("model", "gpt-3.5-turbo"),
+                instructions=newAgent.agentInstructions,
+                name=newAgent.agentName,
+                # tools=["code-editor", "api-console"],
+                model=newAgent.model,
             )
             return new_agent
     except Exception as e:
@@ -53,14 +54,22 @@ async def delete_agent_from_db(agent_id, db):
 
 async def insert_update_new_agent_to_db(new_agent, db):
     try:
+        agentParams = {
+            "agent_id": new_agent.id,
+            "description": new_agent.description,
+            "instructions": new_agent.instructions,
+            "model": new_agent.model,
+            "name": new_agent.name,
+            "status": True,
+            "response_format": new_agent.response_format,
+        }
         async with db as session:
             sql = text(
                 """INSERT INTO chatbot.agents (agent_id, name, description, instructions, model, response_format)
-                VALUES (:id, :name, :description, :instructions, :model, :response_format)
-                RETURNING *;
+                VALUES (:agent_id, :name, :description, :instructions, :model, :response_format);
                 """
             )
-            await session.execute(sql, params=new_agent["response"])
+            await session.execute(sql, params=agentParams)
             await session.commit()
             return True
     except Exception as e:
