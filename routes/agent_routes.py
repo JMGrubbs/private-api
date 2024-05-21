@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 # from typing import Optional
 from dependencies import validate_api_key, db_session
-from agent.data_classes import NewAgent
+from agent.data_classes import NewAgent, DeleteAgent
 from agent.controller import create_agents, select_agents, delete_agent, retrieve_agents
 
 
@@ -37,12 +39,12 @@ async def create_new_agent(newAgent: NewAgent, db=Depends(db_session)):
 
 
 @agentRoutes.delete("/delete", dependencies=[Depends(validate_api_key)])
-async def agent_delete(db=Depends(db_session)):
+async def agent_delete(agent: DeleteAgent, db=Depends(db_session)):
     try:
-        agent = "asst_qdubqj8gWM0m9lgG1XG7lASK"
-        print(f"Deleting agent: {agent}")
         result = await delete_agent(agent, db)
-        print(f"Agent Deleted: {result}")
+        if not result:
+            raise HTTPException(status_code=500, detail="Failed to delete agent")
         return {"response": "delete agent"}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete agent: {e}")
