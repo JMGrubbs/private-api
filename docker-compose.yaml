@@ -20,7 +20,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=chatbot
       - POSTGRES_USER=chatbot_bot
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=lSV50GP5LLA6OoZv
 
   redis:
     image: redis:latest
