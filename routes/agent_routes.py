@@ -1,8 +1,4 @@
 from fastapi import APIRouter, HTTPException, Depends
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
-
-# from typing import Optional
 from dependencies import validate_api_key, db_session
 from agent.data_classes import NewAgent, DeleteAgent
 from agent.controller import create_agents, select_agents, delete_agent, retrieve_agents
