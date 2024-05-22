@@ -42,3 +42,13 @@ async def remove_from_cache_list(agent_id, namespace):
     except Exception as e:
         print(f"Error removing agent from cache: {e}")
         return False
+
+
+async def empty_namespace(namespace):
+    try:
+        async with redis_connection() as rd:
+            await rd.delete(namespace)
+            return True
+    except Exception as e:
+        print(f"Error removing agent from cache: {e}")
+        return False

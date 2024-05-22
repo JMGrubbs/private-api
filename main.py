@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import asyncio
@@ -37,3 +39,14 @@ app.include_router(agentRoutes, prefix="/agents", tags=["agents"])
 app.include_router(homeRoutes, prefix="/home", tags=["home"])
 app.include_router(messageRoutes, prefix="/messages", tags=["message"])
 app.include_router(threadRoutes, prefix="/threads", tags=["threads"])
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # Log the validation error details
+    print(f"Validation error: {exc.errors()}")
+    print(f"Request body: {await request.json()}")
+
+    return JSONResponse(
+        status_code=422, content={"detail": exc.errors(), "body": await request.json()}
+    )

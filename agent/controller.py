@@ -1,4 +1,4 @@
-from cache.tools import get_set_cache_list, remove_from_cache_list
+from cache.tools import get_set_cache_list, remove_from_cache_list, empty_namespace
 from agent.tools import (
     get_agents_openai,
     create_new_agent_openai,
@@ -21,6 +21,7 @@ async def create_agents(new_agent_package, db):
     if new_agent:
         sql_status = await insert_update_new_agent_to_db(new_agent, db)
         if sql_status:
+            await empty_namespace("agents")
             return new_agent
     return False
 
@@ -30,10 +31,10 @@ async def select_agents(db):
     return agents
 
 
-async def delete_agent(agent_id, db):
-    result = await delete_agent_from_db(agent_id, db)
+async def delete_agent(agent, db):
+    result = await delete_agent_from_db(agent.agent_id, db)
     if result:
-        result = await delete_agent_openai(agent_id)
+        result = await delete_agent_openai(agent.agent_id)
     if result:
-        result = await remove_from_cache_list(agent_id, namespace="agents")
+        result = await remove_from_cache_list(agent.agent_id, namespace="agents")
     return result

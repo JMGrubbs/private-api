@@ -3,3 +3,5 @@
 .env
 .rdb
 __pycache__/
+*.yaml
+*.pyc

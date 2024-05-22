@@ -8,26 +8,36 @@ threadRoutes = APIRouter()
 
 @threadRoutes.get("/get", dependencies=[Depends(validate_api_key), Depends(db_session)])
 async def threads_select(db=Depends(db_session)):
-    threads = await select_threads(db)
-    result = True
-    if not result:
-        raise HTTPException(status_code=404, detail="Error getting threads")
-    return {"response": threads}
+    try:
+        threads = await select_threads(db)
+        result = True
+        if not result:
+            raise HTTPException(status_code=404, detail="Error getting threads")
+        return {"response": threads}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @threadRoutes.post("/create", dependencies=[Depends(validate_api_key), Depends(db_session)])
 async def threads_create(db=Depends(db_session)):
-    new_thread = await create_thread(db)
-    if not new_thread:
-        raise HTTPException(status_code=500, detail="Thread not created")
-    return {"response": new_thread}
+    try:
+        new_thread = await create_thread(db)
+        if not new_thread:
+            raise HTTPException(status_code=500, detail="Thread not created")
+        return {"response": new_thread}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @threadRoutes.delete(
     "/{thread_id}/delete", dependencies=[Depends(validate_api_key), Depends(db_session)]
 )
-async def threads_delete(thread_id: str, db=Depends(db_session)):
-    result = await delete_thread(db, thread_id)
-    if not result:
-        raise HTTPException(status_code=404, detail="Thread not found")
-    return {"response": result}
+async def threads_delete(thread_id: int, db=Depends(db_session)):
+    try:
+        result = await delete_thread(db, thread_id)
+        print(result)
+        if not result:
+            raise HTTPException(status_code=404, detail="Thread not found")
+        return {"response": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

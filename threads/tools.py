@@ -58,11 +58,11 @@ async def get_openai_thread_id(id, db):
         return thread_id[0] if thread_id else None
 
 
-async def delete_thread_db(thread_id, db):
+async def delete_thread_db(id, db):
     try:
         async with db as session:
-            stmt = text("UPDATE chatbot.threads SET status = False WHERE thread_id = :thread_id;")
-            await session.execute(stmt, {"thread_id": thread_id})
+            stmt = text("UPDATE chatbot.threads SET status = False WHERE id = :id;")
+            await session.execute(stmt, {"id": id})
             await session.commit()
             return True
     except Exception as e:
