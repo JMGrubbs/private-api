@@ -27,7 +27,8 @@ async def create_agents(new_agent_package, db):
 
 
 async def select_agents(db):
-    return await get_set_cache_list(namespace="agents", cb=select_agents_from_db, db=db)
+    agents = await get_set_cache_list(namespace="agents", cb=select_agents_from_db, db=db)
+    return agents
 
 
 async def delete_agent(agent, db):
