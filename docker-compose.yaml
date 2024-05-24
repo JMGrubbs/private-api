@@ -3,11 +3,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 8001 --reload"
     env_file:
       - .env
     ports:
-      - 8000:8000
+      - 8001:8001
     depends_on:
       - redis
       - postgres
@@ -15,12 +15,14 @@ services:
       - .:/app
       - ./requirements.txt:/app/requirements.txt
     environment:
-      - REDIS_HOST=redis
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=chatbot
-      - POSTGRES_USER=chatbot_bot
-      - POSTGRES_PASSWORD=lSV50GP5LLA6OoZv
+      - DATABASE_URL=postgresql+asyncpg://chatbot_bot:password@postgres:5432/chatbot
+      - REDIS_URL=redis://redis:6379/0
+      # - REDIS_HOST=redis
+      # - POSTGRES_HOST=postgres
+      # - POSTGRES_PORT=5432
+      # - POSTGRES_DB=chatbot
+      # - POSTGRES_USER=chatbot_bot
+      # - POSTGRES_PASSWORD=lSV50GP5LLA6OoZv
 
   redis:
     image: redis:latest
