@@ -10,6 +10,7 @@ from routes.home import homeRoutes
 from routes.message_routes import messageRoutes
 from routes.thread_routes import threadRoutes
 from routes.agent_routes import agentRoutes
+from routes.validations_routes import validationRoutes
 
 
 @asynccontextmanager
@@ -39,6 +40,7 @@ app.include_router(agentRoutes, prefix="/agents", tags=["agents"])
 app.include_router(homeRoutes, prefix="/home", tags=["home"])
 app.include_router(messageRoutes, prefix="/messages", tags=["message"])
 app.include_router(threadRoutes, prefix="/threads", tags=["threads"])
+app.include_router(validationRoutes, prefix="/validations", tags=["validations"])
 
 
 @app.exception_handler(RequestValidationError)
