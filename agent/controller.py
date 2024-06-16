@@ -34,7 +34,7 @@ async def select_agents(db):
 async def delete_agent(agent, db):
     result = await delete_agent_from_db(agent.agent_id, db)
     if result:
-        result = await delete_agent_openai(agent.agent_id)
-    if result:
         result = await remove_from_cache_list(agent.agent_id, namespace="agents")
+    if result:
+        result = await delete_agent_openai(agent.agent_id)
     return result
