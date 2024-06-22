@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from dependencies import validate_api_key, db_session
-from validations.controller import create_validation, check_validation, revoke_validation
+from validations.controller import create_validation, check_validation, revoke_validation, login_user
 from validations.data_classes import AppValidation, RevokedValidation, CheckValidation
 
 validationRoutes = APIRouter()
@@ -29,3 +29,11 @@ async def validation_revoke(request: RevokedValidation, db=Depends(db_session)):
     if not pass_status:
         return {"response": {"validation": "Password Not Revoked"}}
     return {"response": {"temp": "Temp password revoked"}}
+
+
+@validationRoutes.put("/validateuser", dependencies=[Depends(validate_api_key)])
+async def user_login(request: CheckValidation, db=Depends(db_session)):
+    user_session = await login_user(request.password, db=db)
+    if user_session.active_status:
+        return {"response": {"validation": "success", "key": user_session.session_id}}
+    return {"response": {"validation": "failed"}}

@@ -1,3 +1,4 @@
+from sessions.data_classes import UserSession
 from validations.data_classes import AppValidation, RevokedValidation, CheckValidation
 from validations.tools import create_password, revoke_password, check_password
 
@@ -14,9 +15,13 @@ async def revoke_validation(data: RevokedValidation, db):
 async def check_validation(data: CheckValidation, db):
     valid = await check_password(data.password, db)
     if valid:
-        sessions_dict = {
-            "name": valid[1],
-            "status": valid[0]
-        }
+        sessions_dict = {"name": valid[1], "status": valid[0]}
         return sessions_dict
     return False
+
+
+async def login_user(password: str, db):
+    user_profile = UserSession(password=password)
+    await user_profile.validate_session(db=db)
+    print(user_profile.session_id)
+    return user_profile
