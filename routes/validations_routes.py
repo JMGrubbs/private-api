@@ -34,6 +34,4 @@ async def validation_revoke(request: RevokedValidation, db=Depends(db_session)):
 @validationRoutes.put("/validateuser", dependencies=[Depends(validate_api_key)])
 async def user_login(request: CheckValidation, db=Depends(db_session)):
     user_session = await login_user(request.password, db=db)
-    if user_session.active_status:
-        return {"response": {"validation": "success", "key": user_session.session_id}}
-    return {"response": {"validation": "failed"}}
+    return {"response": {"validation": "success", "key": user_session}}

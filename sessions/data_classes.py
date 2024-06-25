@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from sqlalchemy.sql import text
+from datetime import datetime, timedelta
 
 
 class UserSession(BaseModel):
@@ -12,7 +13,6 @@ class UserSession(BaseModel):
         try:
             async with db as session:
                 valid = await session.execute(stmt, {"temp_pass": self.password})
-                print("from the database:", valid)
                 valid = [
                     {
                         "id": id,
