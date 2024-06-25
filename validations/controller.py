@@ -23,9 +23,8 @@ async def check_validation(data: CheckValidation, db):
 
 async def login_user(password: str, db):
     user_session = UserSession(password=password)
-    await user_session.validate_session(db=db)
-    add_session = await handle_user_sessions(user_session)
-    print("session added to cach", add_session)
-    if user_session.active_status:
+    valid_session = await user_session.validate_session(db=db)
+    if valid_session:
+        await handle_user_sessions(user_session)
         return user_session.session_id
     return False

@@ -20,11 +20,12 @@ class UserSession(BaseModel):
                     }
                     for id, user_name in valid
                 ]
-                if valid:
+                if len(valid) > 0:
                     user = valid[0]
                     self.session_id = str(user["id"]) + ":" + user["name"]
                     self.active_status = True
-                return True
+                    return True
+                return False
         except Exception as e:
             print(e)
             return []
