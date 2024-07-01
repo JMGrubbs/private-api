@@ -8,7 +8,7 @@ async def select_threads(db):
 
 async def create_thread(db):
     new_thread = await create_thread_openai()
-    await insert_thread_db(new_thread, db)
+    new_thread = await insert_thread_db(new_thread, db)
     return new_thread
 
 

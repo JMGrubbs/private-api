@@ -10,8 +10,7 @@ threadRoutes = APIRouter()
 async def threads_select(db=Depends(db_session)):
     try:
         threads = await select_threads(db)
-        result = True
-        if not result:
+        if len(threads) > 0:
             raise HTTPException(status_code=404, detail="Error getting threads")
         return {"response": threads}
     except Exception as e:
@@ -29,9 +28,7 @@ async def threads_create(db=Depends(db_session)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@threadRoutes.delete(
-    "/{thread_id}/delete", dependencies=[Depends(validate_api_key), Depends(db_session)]
-)
+@threadRoutes.delete("/{thread_id}/delete", dependencies=[Depends(validate_api_key), Depends(db_session)])
 async def threads_delete(thread_id: int, db=Depends(db_session)):
     try:
         result = await delete_thread(db, thread_id)

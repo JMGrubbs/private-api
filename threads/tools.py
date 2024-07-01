@@ -1,5 +1,7 @@
 from openai_client import openai_client_connection
 from sqlalchemy.sql import text
+from threads.data_classes import Thread
+from typing import List
 
 
 async def create_thread_openai():
@@ -21,30 +23,30 @@ async def get_thread_from_openai(thread_id):
 #         return new_message.model_dump()
 
 
-async def get_threads_db(db):
+async def get_threads_db(db) -> List[Thread]:
     try:
         async with db as session:
-            stmt = text("SELECT id, thread_id, name FROM chatbot.threads WHERE status = true;")
+            stmt = text("SELECT id, thread_id, name, status FROM chatbot.threads WHERE status = true;")
             result = await session.execute(stmt)
             threads = result.fetchall()
-            threads = [
-                {"id": id, "thread_id": thread_id, "name": name} for id, thread_id, name in threads
-            ]
+            threads = [Thread(id=id, thread_id=thread_id, name=name, status=status) for id, thread_id, name, status in threads]
             return threads
     except Exception as e:
         print("Error getting threads from db:", e)
         return False
 
 
-async def insert_thread_db(new_thread, db):
+async def insert_thread_db(new_thread, db) -> Thread | bool:
     try:
         async with db as session:
             stmt = text(
-                "INSERT INTO chatbot.threads (thread_id) VALUES (:thread_id) ON CONFLICT (thread_id) DO NOTHING;"
+                "INSERT INTO chatbot.threads (thread_id) VALUES (:thread_id) ON CONFLICT (thread_id) DO NOTHING RETURNING id, name, status, thread_id;"
             )
-            await session.execute(stmt, {"thread_id": new_thread["id"]})
+            result = await session.execute(stmt, {"thread_id": new_thread["id"]})
+            result = result.fetchone()
             await session.commit()
-            return True
+            new_thread = Thread(id=result[0], name=result[1], status=result[2], thread_id=result[3])
+            return new_thread
     except Exception as e:
         print("Error inserting new thread:", e)
         return False
