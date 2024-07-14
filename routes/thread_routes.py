@@ -10,11 +10,9 @@ threadRoutes = APIRouter()
 async def threads_select(db=Depends(db_session)):
     try:
         threads = await select_threads(db)
-        if len(threads) > 0:
-            raise HTTPException(status_code=404, detail="Error getting threads")
-        return {"response": threads}
+        return {"response": threads, "status": "success"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail={"response": {"details": str(e)}, "status": "error"})
 
 
 @threadRoutes.post("/create", dependencies=[Depends(validate_api_key), Depends(db_session)])

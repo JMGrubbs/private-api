@@ -10,7 +10,7 @@ API_KEY = os.getenv("API_KEY")
 DEFAULT_EXPERATION = 60 * 60 * 12
 
 
-async def handle_user_sessions(user_session: UserSession):
+async def create_user_sessions(user_session: UserSession):
     print(user_session)
     try:
         async with redis_connection() as rd:
@@ -19,6 +19,19 @@ async def handle_user_sessions(user_session: UserSession):
             return True
     except Exception as e:
         print("User session not added to cach", e)
+
+
+async def check_user_session(user_session_id):
+    try:
+        async with redis_connection() as rd:
+            session_key = f"user_session:{user_session_id}"
+            session = await rd.get(session_key)
+            print(session)
+            if not session:
+                return False
+            return True
+    except Exception as e:
+        print("error getting session", e)
 
 
 async def get_set_cache_list(*args, **kwargs):
@@ -72,8 +85,9 @@ async def empty_namespace(namespace):
         return False
 
 
-def validate_api_key(api_key: str = Header(...)):
-    if api_key != API_KEY:
+def validate_api_key(api_key: str = Header(...), user_session_id: str = Header(...)):
+    current_session = check_user_session(user_session_id=user_session_id)
+    if api_key != API_KEY and current_session:
         raise HTTPException(status_code=403, detail="Invalid or missing API key")
     return True
 

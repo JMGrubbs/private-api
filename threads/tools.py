@@ -24,16 +24,12 @@ async def get_thread_from_openai(thread_id):
 
 
 async def get_threads_db(db) -> List[Thread]:
-    try:
-        async with db as session:
-            stmt = text("SELECT id, thread_id, name, status FROM chatbot.threads WHERE status = true;")
-            result = await session.execute(stmt)
-            threads = result.fetchall()
-            threads = [Thread(id=id, thread_id=thread_id, name=name, status=status) for id, thread_id, name, status in threads]
-            return threads
-    except Exception as e:
-        print("Error getting threads from db:", e)
-        return False
+    async with db as session:
+        stmt = text("SELECT id, thread_id, name, status FROM chatbot.threads WHERE status = true;")
+        result = await session.execute(stmt)
+        threads = result.fetchall()
+        threads = [Thread(id=id, thread_id=thread_id, name=name, status=status) for id, thread_id, name, status in threads]
+        return threads
 
 
 async def insert_thread_db(new_thread, db) -> Thread | bool:
